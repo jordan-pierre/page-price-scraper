@@ -32,7 +32,7 @@ def main():
     product_data = []
 
     # Get page title: class="heading__title"
-    page_titles = soup.find_all("h1", class_="heading__title")
+    page_titles = soup.find("h1", class_="heading__title")
     print(page_titles)
 
     # Get product retailer: data-retailer-type
@@ -46,10 +46,10 @@ def main():
         print('-----')
 
         # Get product title: class="product-record__heading--text"
-        product_titles = section.find_all("span", class_="product-record__heading--text")
+        product_titles = section.find("span", class_="product-record__heading--text")
         print(f"product_titles = {product_titles}")
 
-        product_ratings = section.find_all("span", class_="star-rating__label")
+        product_ratings = section.find("span", class_="star-rating__label")
         print(f"product_ratings = {product_ratings}")
 
         
