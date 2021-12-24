@@ -84,7 +84,7 @@ def main():
 
             # Price
             try:
-                price = re.findall('data-commerce-price="*?(\$\d*,?\d*)', str(details))[0]
+                price = re.findall('price="*?(\$\d*,?\d*)', str(details))[0]
             except IndexError:
                 price = np.nan
             
@@ -92,7 +92,7 @@ def main():
 
             # Retailer
             try:
-                retailer = re.findall('View On ([a-zA-Z0-9\'_.-]*)<', str(details))[0]
+                retailer = re.findall('View On (.*)<\/span>', str(details))[0]
             except IndexError:
                 retailer = np.nan
             price_details_list.append({'retailer': retailer, 'price': price})
@@ -107,9 +107,10 @@ def main():
 
     header_row = ['page_titles', 'product_titles', 'product_ratings', 'product_prices', 'avg_product_price']
     df = pd.DataFrame(product_data, columns=header_row)
+    # TODO: Add date
 
     print(df.groupby('page_titles').mean())
-    
+
     df.to_csv('product_data.csv')
 
     # TODO: Crawler to read all the links in the bottom section
