@@ -93,28 +93,26 @@ def scrape_page(url):
 
     header_row = ['page_titles', 'product_titles', 'product_ratings', 'product_prices', 'avg_product_price', 'scraped_date']
     df = pd.DataFrame(product_data, columns=header_row)
+    df = df.reset_index(drop=True)
     
     title_wo_ctrlchar = page_titles.lower().translate(dict.fromkeys(range(32))).replace(' ', '_')
     out_file = f'{OUTPUT_DIR + title_wo_ctrlchar}.csv'
     df.to_csv(out_file)
     print(f'Created {out_file}')
 
-    summary_df = df.groupby('page_titles').mean()
-    print(summary_df)
-
-
     # TODO: Crawler to read all the links in the bottom section
-
     return
 
-def merge_sheets(directory):
-    return
-
-def summarize_table(df):
-    summary_df = df.groupby('page_titles').mean()
 
 def main():
-    with
+    url_file = 'spruce_urls.txt'
+    with open(url_file, 'r') as f:
+        lines = f.readlines()
+        urls = [line.strip('\n') for line in lines]
+    
+    for url in urls:
+        scrape_page(url)
+
 
 if __name__=='__main__':
     main()
