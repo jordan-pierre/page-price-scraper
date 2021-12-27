@@ -7,7 +7,7 @@ def merge_sheets(input_path, output_file):
     df_from_each_file = (pd.read_csv(f) for f in all_files)
 
     concatenated_df = pd.concat(df_from_each_file, ignore_index=True)
-    concatenated_df = concatenated_df[['page_titles','product_titles','product_ratings','product_prices','avg_product_price','url','scraped_date']].sort_values('page_titles') # select only named columns
+    concatenated_df = concatenated_df[['page_titles','product_titles','product_ratings','product_prices','avg_product_price','url','scraped_date']].drop_duplicates().sort_values('page_titles') # select only named columns
     concatenated_df.to_csv(output_file, index=False)
     return concatenated_df
 
