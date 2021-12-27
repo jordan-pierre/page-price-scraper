@@ -105,9 +105,7 @@ def scrape_page(url):
         logging.info(f'Created {out_file}')
     except AttributeError:
         logging.warning(f'Failed to create file for the following URL: {url}')
-
     
-
     # TODO: Crawler to read all the links in the bottom section
     return out_file
 
