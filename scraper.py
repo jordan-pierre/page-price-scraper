@@ -9,6 +9,9 @@ import numpy as np
 import re
 from statistics import mean
 from datetime import date, datetime
+import logging
+
+logging.basicConfig(filename='example.log', level=logging.DEBUG)
 
 CHROME_DRIVER_LOC = '/home/jordan/Documents/page-price-scraper/chromedriver'
 OUTPUT_DIR = 'output/'
@@ -88,20 +91,25 @@ def scrape_page(url):
         prices = [float(x['price'].strip('$').replace(',', '')) for x in price_details_list if isinstance(x['price'], str)]
         avg_product_price = mean(prices) if len(prices) > 0 else np.nan
         
-        product_data.append([page_titles, product_titles, product_ratings, price_details_list, avg_product_price, date.today()])
+        product_data.append([page_titles, product_titles, product_ratings, price_details_list, avg_product_price, url, date.today()])
     
 
-    header_row = ['page_titles', 'product_titles', 'product_ratings', 'product_prices', 'avg_product_price', 'scraped_date']
+    header_row = ['page_titles', 'product_titles', 'product_ratings', 'product_prices', 'avg_product_price', 'url', 'scraped_date']
     df = pd.DataFrame(product_data, columns=header_row)
     df = df.reset_index(drop=True)
     
-    title_wo_ctrlchar = page_titles.lower().translate(dict.fromkeys(range(32))).replace(' ', '_')
-    out_file = f'{OUTPUT_DIR + title_wo_ctrlchar}.csv'
-    df.to_csv(out_file)
-    print(f'Created {out_file}')
+    try:
+        title_wo_ctrlchar = page_titles.lower().translate(dict.fromkeys(range(32))).replace(' ', '_')
+        out_file = f'{OUTPUT_DIR + title_wo_ctrlchar}.csv'
+        df.to_csv(out_file)
+        logging.info(f'Created {out_file}')
+    except AttributeError:
+        logging.warning(f'Failed to create file for the following URL: {url}')
+
+    
 
     # TODO: Crawler to read all the links in the bottom section
-    return
+    return out_file
 
 
 def main():
@@ -113,6 +121,7 @@ def main():
     for url in urls:
         scrape_page(url)
 
+    print('SUCCESS')
 
 if __name__=='__main__':
     main()
