@@ -8,8 +8,10 @@ import pandas as pd
 import numpy as np
 import re
 from statistics import mean
+from datetime import date, datetime
 
 CHROME_DRIVER_LOC = '/home/jordan/Documents/page-price-scraper/chromedriver'
+OUTPUT_DIR = 'output/'
 
 def load_page(url, static_mode=False):
     '''Read webpage.  Need to use selenium to wait on JavaScript objects'''
@@ -31,12 +33,8 @@ def load_page(url, static_mode=False):
     return BeautifulSoup(s_page, 'html.parser')
 
 
-def main():
-    # sample_page = 'https://www.thespruce.com/best-canister-vacuums-4171592'
-    sample_page = 'https://www.thespruce.com/best-headboards-4165760'
-    # sample_page = 'https://www.thespruce.com/best-garage-heaters-4176054'
-
-    soup = load_page(sample_page, static_mode=True)
+def scrape_page(url):
+    soup = load_page(url, static_mode=False)
 
     product_data = []
 
@@ -49,17 +47,12 @@ def main():
 
     # Get product retailer: data-retailer-type
     product_sections = soup.find_all("div", class_="comp sc-list-item list-sc-item__content mntl-block")
-    print("-- product sections --")
-    print(f"Product sections type: {type(product_sections)}")
     for section in product_sections:
-        print(f"Section type: {type(section)}")
         with open('section.txt', 'w') as f:
             print(section, file=f)
-        print('-----')
 
         # Get product title: class="product-record__heading--text"
         product_titles = section.find("span", class_="product-record__heading--text")
-        print(f"product_titles = {product_titles}")
         try:
             product_titles = re.findall('>([^<]*)<\/', str(product_titles))[0].replace('\n', ' ').strip()
         except IndexError:
@@ -71,8 +64,6 @@ def main():
             product_ratings = re.findall('>(\d*[.,]?\d*)<\/', str(product_ratings))[0]
         except IndexError:
             product_ratings = product_ratings
-        print(f"product_ratings = {product_ratings}")
-
         
         product_details = section.find_all("a", class_="button mntl-commerce-button mntl-text-link js-extended-commerce__button")
         
@@ -80,15 +71,12 @@ def main():
         for details in product_details:
             with open('details.txt', 'w') as f:
                 print(section, file=f)
-            print(f"details_type = {type(details)}")
 
             # Price
             try:
                 price = re.findall('price="*?(\$\d*,?\d*)', str(details))[0]
             except IndexError:
                 price = np.nan
-            
-            print(f"price = {price}")
 
             # Retailer
             try:
@@ -97,25 +85,36 @@ def main():
                 retailer = np.nan
             price_details_list.append({'retailer': retailer, 'price': price})
 
-        print(f"product_prices = {price_details_list}")
-
         prices = [float(x['price'].strip('$').replace(',', '')) for x in price_details_list if isinstance(x['price'], str)]
         avg_product_price = mean(prices) if len(prices) > 0 else np.nan
         
-        product_data.append([page_titles, product_titles, product_ratings, price_details_list, avg_product_price])
+        product_data.append([page_titles, product_titles, product_ratings, price_details_list, avg_product_price, date.today()])
     
 
-    header_row = ['page_titles', 'product_titles', 'product_ratings', 'product_prices', 'avg_product_price']
+    header_row = ['page_titles', 'product_titles', 'product_ratings', 'product_prices', 'avg_product_price', 'scraped_date']
     df = pd.DataFrame(product_data, columns=header_row)
-    # TODO: Add date
+    
+    title_wo_ctrlchar = page_titles.lower().translate(dict.fromkeys(range(32))).replace(' ', '_')
+    out_file = f'{OUTPUT_DIR + title_wo_ctrlchar}.csv'
+    df.to_csv(out_file)
+    print(f'Created {out_file}')
 
-    print(df.groupby('page_titles').mean())
+    summary_df = df.groupby('page_titles').mean()
+    print(summary_df)
 
-    df.to_csv('product_data.csv')
 
     # TODO: Crawler to read all the links in the bottom section
 
     return
+
+def merge_sheets(directory):
+    return
+
+def summarize_table(df):
+    summary_df = df.groupby('page_titles').mean()
+
+def main():
+    with
 
 if __name__=='__main__':
     main()
